@@ -1,4 +1,4 @@
-# Unreleased
+# 0.2.99 (2023-11-13 / 8ee9b60)
 
 ## Changed
 
