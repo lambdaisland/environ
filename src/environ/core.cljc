@@ -1,8 +1,13 @@
 (ns environ.core
-  (:require #?(:clj [clojure.edn :as edn] :cljs [cljs.reader :as edn])
-            #?(:clj [clojure.java.io :as io])
-            #?(:cljs [goog.object :as obj])
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [lambdaisland.dotenv :as dotenv]
+   #?@(:clj
+       [[clojure.edn :as edn]
+        [clojure.java.io :as io]]
+       :cljs
+       [[cljs.reader :as edn]
+        [goog.object :as obj]])))
 
 #?(:cljs (def ^:private nodejs?
            (exists? js/require)))
@@ -49,11 +54,6 @@
      :cljs (when ^js (.existsSync fs f)
              (str ^js (.readFileSync fs f)))))
 
-(defn- read-env-file [f]
-  (when-let [content (slurp-file f)]
-    (into {} (for [[k v] (edn/read-string content)]
-               [(sanitize-key k) (sanitize-val k v)]))))
-
 (defn- warn-on-overwrite [ms]
   (doseq [[k kvs] (group-by key (apply concat ms))
           :let  [vs (map val kvs)]
@@ -66,16 +66,16 @@
   (apply merge ms))
 
 (defn- read-env []
-  #?(:clj (merge-env
-           (read-env-file ".lein-env")
-           (read-env-file (io/resource ".boot-env"))
-           (read-system-env)
-           (read-system-props))
-     :cljs (if nodejs?
-             (merge-env
-              (read-env-file ".lein-env")
-              (read-system-env))
-             {})))
+  (into
+   #?(:clj (merge-env
+            (read-system-env)
+            (read-system-props))
+      :cljs (if nodejs?
+              (merge-env
+               (read-system-env))
+              {}))
+   (map (juxt (comp keywordize key) val))
+   (dotenv/parse-dotenv (or (slurp-file ".env") ""))))
 
 (defonce ^{:doc "A map of environment variables."}
   env (read-env))
