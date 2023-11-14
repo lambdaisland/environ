@@ -1,10 +1,8 @@
 # Unreleased
 
-## Added
-
-## Fixed
-
 ## Changed
+
+- Do variable expansion in environment variables
 
 # 0.2.99 (2023-11-13 / 8ee9b60)
 

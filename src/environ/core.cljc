@@ -75,7 +75,7 @@
                (read-system-env))
               {}))
    (map (juxt (comp keywordize key) val))
-   (dotenv/parse-dotenv (or (slurp-file ".env") ""))))
+   (dotenv/parse-dotenv (or (slurp-file ".env") "") {:expand? true})))
 
 (defonce ^{:doc "A map of environment variables."}
   env (read-env))
